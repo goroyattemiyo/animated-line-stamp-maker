@@ -3,16 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="1枚の透過PNGからLINEアニメーションスタンプ用APNGを作るブラウザアプリ">
-  <meta name="theme-color" content="#09111f">
+  <meta name="description" content="1枚の透過PNGに表情・感情エフェクト・文字を加えてLINEアニメーションスタンプ用APNGを作るWebアプリ">
+  <meta name="theme-color" content="#08101d">
   <title>Animated LINE Stamp Maker</title>
-  <link rel="stylesheet" href="styles.css?v=20260802-3">
+  <link rel="stylesheet" href="styles.css?v=20260802-4">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">8</span>
-      <div><strong>Animated LINE Stamp Maker</strong><span>1枚PNG → 動くスタンプ</span></div>
+      <div>
+        <strong>Animated LINE Stamp Maker</strong>
+        <span>1枚PNGに感情をつける</span>
+      </div>
     </div>
     <div class="top-actions">
       <span id="appStatus" class="status-pill">起動中…</span>
@@ -22,127 +25,151 @@
   </header>
 
   <main class="app-shell">
-    <section class="intro">
+    <section class="hero-strip">
       <div>
-        <span class="eyebrow">Web MVP</span>
-        <h1>1枚のキャラ画像に、動きを付ける。</h1>
-        <p>透過PNGを読み込み、動きテンプレートを選ぶだけで8フレームを生成。プレビューしてLINE向けAPNGとして保存します。</p>
+        <p class="eyebrow">EMOTION ANIMATION MAKER</p>
+        <h1>笑う、怒る、泣く。<br>1枚の絵に感情をつける。</h1>
+        <p>画像・表情・エフェクト・文字を8フレームへ合成し、ブラウザ内だけでAPNGを書き出します。</p>
       </div>
-      <div class="goal-chip">画像はブラウザ内だけで処理</div>
+      <div class="goal-chip">v1：感情スタンプを1個完成</div>
     </section>
 
     <section class="workspace">
       <aside class="panel input-panel">
-        <div class="panel-heading"><div><span>STEP 1</span><h2>PNGを読み込む</h2></div></div>
+        <div class="panel-heading">
+          <div><span class="step-label">STEP 1</span><h2>画像を入れる</h2></div>
+        </div>
 
         <label id="dropZone" class="drop-zone" for="fileInput">
           <input id="fileInput" type="file" accept="image/png">
           <span class="drop-icon">＋</span>
           <strong>透過PNGを選択</strong>
-          <small>ドラッグ＆ドロップにも対応</small>
+          <small>画像は外部へ送信されません</small>
         </label>
 
-        <div id="fileMeta" class="meta-card hidden">
+        <div id="sourceMeta" class="source-meta hidden">
           <div><span>ファイル</span><strong id="fileName">-</strong></div>
-          <div><span>画像サイズ</span><strong id="imageSize">-</strong></div>
-          <div><span>透明領域</span><strong id="alphaState">-</strong></div>
+          <div><span>元サイズ</span><strong id="sourceSize">-</strong></div>
+          <div><span>透過</span><strong id="alphaState">-</strong></div>
         </div>
 
-        <div class="source-card">
-          <div class="subheading"><strong>元画像</strong><span id="cropState">未読込</span></div>
-          <div class="source-stage checker">
-            <canvas id="sourceCanvas" width="320" height="270"></canvas>
-            <p id="sourceEmpty" class="empty-state">PNGを読み込むとここに表示します</p>
+        <div class="source-preview checker">
+          <canvas id="sourceCanvas" width="320" height="270" aria-label="読み込んだ元画像"></canvas>
+          <div id="emptySource" class="empty-overlay">PNGを読み込むとここに表示します</div>
+        </div>
+
+        <div class="control-card compact-controls">
+          <label>
+            <span>画像サイズ <b id="scaleValue">100%</b></span>
+            <input id="scaleRange" type="range" min="55" max="140" value="100" disabled>
+          </label>
+          <div class="split-controls">
+            <label><span>左右 <b id="positionXValue">0</b></span><input id="positionXRange" type="range" min="-90" max="90" value="0" disabled></label>
+            <label><span>上下 <b id="positionYValue">0</b></span><input id="positionYRange" type="range" min="-80" max="80" value="0" disabled></label>
           </div>
         </div>
       </aside>
 
       <section class="panel preview-panel">
         <div class="panel-heading">
-          <div><span>STEP 2</span><h2>アニメーションプレビュー</h2></div>
-          <strong id="frameCounter" class="counter">- / 8</strong>
+          <div><span class="step-label">STEP 2</span><h2>動きを確認する</h2></div>
+          <span id="previewFrameLabel" class="frame-counter">- / 8</span>
         </div>
 
         <div id="previewStage" class="preview-stage checker">
-          <canvas id="previewCanvas" width="320" height="270"></canvas>
-          <p id="previewEmpty" class="empty-state">読み込んだ画像を8フレームで再生します</p>
+          <canvas id="previewCanvas" width="320" height="270" aria-label="感情アニメーションプレビュー"></canvas>
+          <div id="emptyPreview" class="empty-overlay">感情アニメーションをここで再生します</div>
         </div>
 
         <div class="transport">
-          <button id="firstButton" type="button" disabled>|◀</button>
-          <button id="prevButton" type="button" disabled>◀</button>
+          <button id="firstFrameButton" type="button" disabled title="先頭">|◀</button>
+          <button id="previousFrameButton" type="button" disabled title="前へ">◀</button>
           <button id="playButton" class="play-button" type="button" disabled>▶ 再生</button>
-          <button id="nextButton" type="button" disabled>▶</button>
-          <button id="lastButton" type="button" disabled>▶|</button>
+          <button id="nextFrameButton" type="button" disabled title="次へ">▶</button>
+          <button id="lastFrameButton" type="button" disabled title="最後">▶|</button>
         </div>
 
         <div class="preview-options">
-          <label><span>背景</span><select id="backgroundSelect" disabled>
-            <option value="checker">透明市松</option><option value="white">白</option><option value="black">黒</option><option value="gray">グレー</option>
-          </select></label>
-          <label><span>1ループ</span><select id="durationSelect" disabled>
-            <option value="1000">1秒</option><option value="2000">2秒</option><option value="3000">3秒</option><option value="4000">4秒</option>
-          </select></label>
-          <label><span>ループ回数</span><select id="loopSelect" disabled></select></label>
+          <label><span>背景</span><select id="backgroundSelect" disabled><option value="checker">透明市松</option><option value="white">白</option><option value="black">黒</option><option value="gray">グレー</option></select></label>
+          <label><span>1ループ</span><select id="durationSelect" disabled><option value="1000">1秒</option><option value="2000">2秒</option><option value="3000">3秒</option><option value="4000">4秒</option></select></label>
+          <label><span>ループ</span><select id="loopSelect" disabled><option value="1">1回</option><option value="2">2回</option><option value="3">3回</option><option value="4" selected>4回</option></select></label>
         </div>
 
         <div class="metrics">
+          <div><span>感情</span><strong id="metricEmotion">-</strong></div>
           <div><span>フレーム</span><strong>8</strong></div>
-          <div><span>出力</span><strong>320×270</strong></div>
-          <div><span>総再生</span><strong id="totalDuration">4.0秒</strong></div>
-          <div><span>容量</span><strong id="fileBytes">未生成</strong></div>
+          <div><span>総再生</span><strong id="metricTotal">4.0秒</strong></div>
+          <div><span>出力</span><strong id="metricOutput">320×270</strong></div>
         </div>
       </section>
 
-      <aside class="panel control-panel">
-        <div class="panel-heading"><div><span>STEP 3</span><h2>動きを調整</h2></div></div>
-
-        <div class="control-group">
-          <label class="field"><span>動きテンプレート</span><select id="motionSelect" disabled>
-            <option value="bounce">ぴょこ</option>
-            <option value="sway">ゆらゆら</option>
-            <option value="shake">ぷるぷる</option>
-            <option value="bow">ぺこり</option>
-            <option value="pop">ぽよん</option>
-            <option value="float">ふわふわ</option>
-            <option value="spin">くるり</option>
-          </select></label>
-          <p id="motionDescription" class="hint">上下に軽く跳ねます。</p>
+      <aside class="panel editor-panel">
+        <div class="panel-heading">
+          <div><span class="step-label">STEP 3</span><h2>感情を作る</h2></div>
         </div>
 
-        <div class="control-group sliders">
-          <label><span>動きの強さ <b id="strengthValue">55</b></span><input id="strengthRange" type="range" min="0" max="100" value="55" disabled></label>
-          <label><span>画像サイズ <b id="scaleValue">88%</b></span><input id="scaleRange" type="range" min="35" max="120" value="88" disabled></label>
-          <label><span>横位置 <b id="xValue">0</b></span><input id="xRange" type="range" min="-80" max="80" value="0" disabled></label>
-          <label><span>縦位置 <b id="yValue">0</b></span><input id="yRange" type="range" min="-70" max="70" value="0" disabled></label>
+        <div id="emotionGrid" class="emotion-grid" role="group" aria-label="感情テンプレート">
+          <button type="button" data-emotion="laugh" disabled><span>😆</span><strong>笑う</strong><small>跳ねる＋笑顔</small></button>
+          <button type="button" data-emotion="angry" disabled><span>💢</span><strong>怒る</strong><small>震える＋怒り</small></button>
+          <button type="button" data-emotion="cry" disabled><span>😭</span><strong>泣く</strong><small>涙＋沈む</small></button>
+          <button type="button" data-emotion="surprise" disabled><span>😲</span><strong>驚く</strong><small>飛び出す＋集中線</small></button>
+          <button type="button" data-emotion="shy" disabled><span>🥰</span><strong>照れる</strong><small>赤面＋ハート</small></button>
+          <button type="button" data-emotion="bow" disabled><span>🙇</span><strong>お辞儀</strong><small>傾く＋丁寧</small></button>
+        </div>
+
+        <div class="control-card">
+          <div class="control-title"><strong>動き</strong><span id="intensityValue">70%</span></div>
+          <input id="intensityRange" type="range" min="10" max="100" value="70" disabled>
+        </div>
+
+        <div class="control-card">
+          <div class="toggle-row"><label><input id="expressionToggle" type="checkbox" checked disabled><span>表情を重ねる</span></label><label><input id="effectToggle" type="checkbox" checked disabled><span>感情エフェクト</span></label></div>
+          <div class="split-controls face-controls">
+            <label><span>表情 左右 <b id="faceXValue">0</b></span><input id="faceXRange" type="range" min="-40" max="40" value="0" disabled></label>
+            <label><span>表情 上下 <b id="faceYValue">-12</b></span><input id="faceYRange" type="range" min="-55" max="35" value="-12" disabled></label>
+          </div>
+          <label class="full-control"><span>表情サイズ <b id="faceSizeValue">100%</b></span><input id="faceSizeRange" type="range" min="55" max="155" value="100" disabled></label>
+        </div>
+
+        <div class="control-card text-card">
+          <div class="toggle-row single"><label><input id="textToggle" type="checkbox" checked disabled><span>文字を入れる</span></label></div>
+          <input id="textInput" type="text" maxlength="18" value="わーい！" disabled aria-label="スタンプの文字">
+          <div class="split-controls">
+            <label><span>位置</span><select id="textPositionSelect" disabled><option value="top">上</option><option value="bottom" selected>下</option></select></label>
+            <label><span>文字サイズ</span><select id="textSizeSelect" disabled><option value="34">小</option><option value="42" selected>中</option><option value="50">大</option></select></label>
+          </div>
         </div>
 
         <div class="validation-card">
-          <div class="validation-title"><strong>LINE仕様チェック</strong><span id="validationBadge" class="badge idle">待機</span></div>
+          <div class="validation-heading"><strong>出力チェック</strong><span id="validationBadge" class="validation-badge idle">待機</span></div>
           <ul id="validationList">
-            <li data-rule="loaded">PNG読込</li>
+            <li data-rule="image">PNG画像を読込済み</li>
             <li data-rule="frames">8フレーム</li>
-            <li data-rule="duration">1ループ 1〜4秒</li>
-            <li data-rule="total">総再生時間 4秒以内</li>
-            <li data-rule="size">320×270以内</li>
-            <li data-rule="alpha">透明領域あり</li>
-            <li data-rule="bytes">1MB以下</li>
+            <li data-rule="duration">総再生時間4秒以内</li>
+            <li data-rule="size">320×270px以内</li>
+            <li data-rule="alpha">透明背景を保持</li>
+            <li data-rule="bytes">APNG 1MB以下</li>
           </ul>
         </div>
 
         <button id="exportButton" class="primary-button" type="button" disabled>APNGを書き出す</button>
-        <button id="saveFrameButton" class="secondary-button" type="button" disabled>現在フレームをPNG保存</button>
-        <p id="message" class="message" aria-live="polite"></p>
+        <button id="exportFrameButton" class="secondary-button" type="button" disabled>現在フレームPNGを保存</button>
+        <p id="exportMessage" class="export-message" aria-live="polite"></p>
       </aside>
     </section>
 
     <section class="panel timeline-panel">
-      <div class="panel-heading timeline-heading"><div><span>GENERATED FRAMES</span><h2>自動生成された8フレーム</h2></div><p>クリックで確認</p></div>
-      <div id="timeline" class="timeline"><p class="timeline-empty">画像を読み込むと8フレームを生成します</p></div>
+      <div class="panel-heading timeline-heading"><div><span class="step-label">8 FRAMES</span><h2>生成フレーム</h2></div><p>クリックして静止確認</p></div>
+      <div id="timeline" class="timeline"><div class="timeline-empty">画像を読み込むと8フレームを自動生成します</div></div>
+    </section>
+
+    <section class="notes-panel">
+      <strong>現在の実装</strong>
+      <span>1枚絵へ全体モーション、簡易表情、涙・怒り・ハート等のエフェクト、白フチ文字を合成します。手足の独立動作やAI修復はまだ行いません。</span>
     </section>
   </main>
 
-  <noscript>このアプリにはJavaScriptが必要です。</noscript>
-  <script src="app.js?v=20260802-3"></script>
+  <noscript>このアプリを使用するにはJavaScriptを有効にしてください。</noscript>
+  <script src="app.js?v=20260802-4"></script>
 </body>
 </html>
