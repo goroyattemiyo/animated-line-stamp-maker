@@ -28,10 +28,13 @@ jobs:
       - name: Validate web app
         run: |
           node --check docs/app.js
+          node --check docs/upng-loader.js
           test -f docs/index.html
           test -f docs/styles.css
           grep -q 'id="previewCanvas"' docs/index.html
           grep -q 'id="exportButton"' docs/index.html
+          grep -q 'src="app.js?v=' docs/index.html
+          grep -q 'src="upng-loader.js?v=' docs/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
