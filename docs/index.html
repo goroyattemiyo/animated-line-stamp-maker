@@ -6,7 +6,7 @@
   <meta name="description" content="1枚の透過PNGに表情・感情エフェクト・文字を加えてLINEアニメーションスタンプ用APNGを作るWebアプリ">
   <meta name="theme-color" content="#08101d">
   <title>Animated LINE Stamp Maker</title>
-  <link rel="stylesheet" href="styles.css?v=20260802-4">
+  <link rel="stylesheet" href="styles.css?v=20260802-5">
 </head>
 <body>
   <header class="topbar">
@@ -29,7 +29,7 @@
       <div>
         <p class="eyebrow">EMOTION ANIMATION MAKER</p>
         <h1>笑う、怒る、泣く。<br>1枚の絵に感情をつける。</h1>
-        <p>画像・表情・エフェクト・文字を8フレームへ合成し、ブラウザ内だけでAPNGを書き出します。</p>
+        <p>画像・動作プリセット・エフェクト・文字を8フレームへ合成し、ブラウザ内だけでAPNGを書き出します。</p>
       </div>
       <div class="goal-chip">v1：感情スタンプを1個完成</div>
     </section>
@@ -96,7 +96,7 @@
         </div>
 
         <div class="metrics">
-          <div><span>感情</span><strong id="metricEmotion">-</strong></div>
+          <div><span>感情・動作</span><strong id="metricEmotion">-</strong></div>
           <div><span>フレーム</span><strong>8</strong></div>
           <div><span>総再生</span><strong id="metricTotal">4.0秒</strong></div>
           <div><span>出力</span><strong id="metricOutput">320×270</strong></div>
@@ -105,25 +105,25 @@
 
       <aside class="panel editor-panel">
         <div class="panel-heading">
-          <div><span class="step-label">STEP 3</span><h2>感情を作る</h2></div>
+          <div><span class="step-label">STEP 3</span><h2>感情と動作を作る</h2></div>
         </div>
 
         <div id="emotionGrid" class="emotion-grid" role="group" aria-label="感情テンプレート">
-          <button type="button" data-emotion="laugh" disabled><span>😆</span><strong>笑う</strong><small>跳ねる＋笑顔</small></button>
-          <button type="button" data-emotion="angry" disabled><span>💢</span><strong>怒る</strong><small>震える＋怒り</small></button>
-          <button type="button" data-emotion="cry" disabled><span>😭</span><strong>泣く</strong><small>涙＋沈む</small></button>
-          <button type="button" data-emotion="surprise" disabled><span>😲</span><strong>驚く</strong><small>飛び出す＋集中線</small></button>
-          <button type="button" data-emotion="shy" disabled><span>🥰</span><strong>照れる</strong><small>赤面＋ハート</small></button>
-          <button type="button" data-emotion="bow" disabled><span>🙇</span><strong>お辞儀</strong><small>傾く＋丁寧</small></button>
+          <button type="button" data-emotion="laugh" disabled><span>😆</span><strong>笑う</strong><small>ジャンプ推奨</small></button>
+          <button type="button" data-emotion="angry" disabled><span>💢</span><strong>怒る</strong><small>ぷるぷる推奨</small></button>
+          <button type="button" data-emotion="cry" disabled><span>😭</span><strong>泣く</strong><small>しょんぼり推奨</small></button>
+          <button type="button" data-emotion="surprise" disabled><span>😲</span><strong>驚く</strong><small>ジャンプ推奨</small></button>
+          <button type="button" data-emotion="shy" disabled><span>🥰</span><strong>照れる</strong><small>ゆらゆら推奨</small></button>
+          <button type="button" data-emotion="bow" disabled><span>🙇</span><strong>お辞儀</strong><small>お辞儀推奨</small></button>
         </div>
 
         <div class="control-card">
-          <div class="control-title"><strong>動き</strong><span id="intensityValue">70%</span></div>
+          <div class="control-title"><strong>旧動き強度</strong><span id="intensityValue">70%</span></div>
           <input id="intensityRange" type="range" min="10" max="100" value="70" disabled>
         </div>
 
         <div class="control-card">
-          <div class="toggle-row"><label><input id="expressionToggle" type="checkbox" checked disabled><span>表情を重ねる</span></label><label><input id="effectToggle" type="checkbox" checked disabled><span>感情エフェクト</span></label></div>
+          <div class="toggle-row"><label><input id="expressionToggle" type="checkbox" disabled><span>簡易表情を重ねる</span></label><label><input id="effectToggle" type="checkbox" checked disabled><span>感情エフェクト</span></label></div>
           <div class="split-controls face-controls">
             <label><span>表情 左右 <b id="faceXValue">0</b></span><input id="faceXRange" type="range" min="-40" max="40" value="0" disabled></label>
             <label><span>表情 上下 <b id="faceYValue">-12</b></span><input id="faceYRange" type="range" min="-55" max="35" value="-12" disabled></label>
@@ -164,12 +164,13 @@
     </section>
 
     <section class="notes-panel">
-      <strong>現在の実装</strong>
-      <span>1枚絵へ全体モーション、簡易表情、涙・怒り・ハート等のエフェクト、白フチ文字を合成します。手足の独立動作やAI修復はまだ行いません。</span>
+      <strong>今回の実装</strong>
+      <span>お辞儀・うなずく・首かしげ・手を振る（仮）・ジャンプ・ぷるぷる・左右ゆらゆら・しょんぼりを選択できます。本格的な関節変形は次のリグ編集段階で接続します。</span>
     </section>
   </main>
 
   <noscript>このアプリを使用するにはJavaScriptを有効にしてください。</noscript>
-  <script src="app.js?v=20260802-4"></script>
+  <script src="app.js?v=20260802-5"></script>
+  <script src="motion-presets.js?v=20260802-5"></script>
 </body>
 </html>
