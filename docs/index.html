@@ -3,211 +3,146 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="4列×2行の8フレームシートをLINEアニメーションスタンプ用APNGへ整えるブラウザアプリ">
-  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="1枚の透過PNGからLINEアニメーションスタンプ用APNGを作るブラウザアプリ">
+  <meta name="theme-color" content="#09111f">
   <title>Animated LINE Stamp Maker</title>
-  <link rel="stylesheet" href="styles.css?v=20260802-2">
+  <link rel="stylesheet" href="styles.css?v=20260802-3">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">8</span>
-      <div>
-        <strong>Animated LINE Stamp Maker</strong>
-        <span>Web MVP</span>
-      </div>
+      <div><strong>Animated LINE Stamp Maker</strong><span>1枚PNG → 動くスタンプ</span></div>
     </div>
     <div class="top-actions">
-      <span id="saveState" class="status-pill">JavaScript確認中…</span>
+      <span id="appStatus" class="status-pill">起動中…</span>
+      <button id="resetButton" class="ghost-button" type="button" disabled>リセット</button>
       <a class="ghost-button" href="https://github.com/goroyattemiyo/animated-line-stamp-maker" target="_blank" rel="noreferrer">GitHub</a>
     </div>
   </header>
 
   <main class="app-shell">
-    <section class="intro-strip">
+    <section class="intro">
       <div>
-        <h1>8コマ画像を、動くLINEスタンプへ。</h1>
-        <p>画像は外部へ送信せず、ブラウザ内だけで分割・調整・プレビュー・APNG出力します。</p>
+        <span class="eyebrow">Web MVP</span>
+        <h1>1枚のキャラ画像に、動きを付ける。</h1>
+        <p>透過PNGを読み込み、動きテンプレートを選ぶだけで8フレームを生成。プレビューしてLINE向けAPNGとして保存します。</p>
       </div>
-      <div class="goal-chip">v1ゴール：スタンプ1個を完成</div>
+      <div class="goal-chip">画像はブラウザ内だけで処理</div>
     </section>
 
     <section class="workspace">
-      <aside class="panel source-panel">
-        <div class="panel-heading">
-          <div>
-            <span class="step-label">STEP 1</span>
-            <h2>シート読込</h2>
-          </div>
-          <button id="resetButton" class="icon-button" type="button" disabled title="リセット">↺</button>
-        </div>
+      <aside class="panel input-panel">
+        <div class="panel-heading"><div><span>STEP 1</span><h2>PNGを読み込む</h2></div></div>
 
         <label id="dropZone" class="drop-zone" for="fileInput">
           <input id="fileInput" type="file" accept="image/png">
           <span class="drop-icon">＋</span>
-          <strong>PNGを選択</strong>
-          <small>横4列×縦2行・8フレーム</small>
+          <strong>透過PNGを選択</strong>
+          <small>ドラッグ＆ドロップにも対応</small>
         </label>
 
-        <div id="sourceMeta" class="source-meta hidden">
+        <div id="fileMeta" class="meta-card hidden">
           <div><span>ファイル</span><strong id="fileName">-</strong></div>
-          <div><span>元サイズ</span><strong id="sourceSize">-</strong></div>
-          <div><span>セル</span><strong id="cellSize">-</strong></div>
+          <div><span>画像サイズ</span><strong id="imageSize">-</strong></div>
+          <div><span>透明領域</span><strong id="alphaState">-</strong></div>
         </div>
 
-        <div class="canvas-card">
-          <div class="canvas-toolbar">
-            <span>元シート</span>
-            <span id="sourceZoomLabel">100%</span>
-          </div>
+        <div class="source-card">
+          <div class="subheading"><strong>元画像</strong><span id="cropState">未読込</span></div>
           <div class="source-stage checker">
-            <canvas id="sourceCanvas" width="640" height="320" aria-label="読み込んだフレームシート"></canvas>
-            <div id="emptySource" class="empty-overlay">画像を読み込むと4×2の分割線を表示します</div>
+            <canvas id="sourceCanvas" width="320" height="270"></canvas>
+            <p id="sourceEmpty" class="empty-state">PNGを読み込むとここに表示します</p>
           </div>
         </div>
       </aside>
 
       <section class="panel preview-panel">
         <div class="panel-heading">
-          <div>
-            <span class="step-label">STEP 2</span>
-            <h2>アニメーション確認</h2>
-          </div>
-          <span id="previewFrameLabel" class="frame-counter">- / -</span>
+          <div><span>STEP 2</span><h2>アニメーションプレビュー</h2></div>
+          <strong id="frameCounter" class="counter">- / 8</strong>
         </div>
 
         <div id="previewStage" class="preview-stage checker">
-          <canvas id="previewCanvas" width="320" height="270" aria-label="アニメーションプレビュー"></canvas>
-          <div id="emptyPreview" class="empty-overlay">8フレームをここで再生します</div>
+          <canvas id="previewCanvas" width="320" height="270"></canvas>
+          <p id="previewEmpty" class="empty-state">読み込んだ画像を8フレームで再生します</p>
         </div>
 
         <div class="transport">
-          <button id="firstFrameButton" type="button" disabled title="先頭">|◀</button>
-          <button id="previousFrameButton" type="button" disabled title="前へ">◀</button>
+          <button id="firstButton" type="button" disabled>|◀</button>
+          <button id="prevButton" type="button" disabled>◀</button>
           <button id="playButton" class="play-button" type="button" disabled>▶ 再生</button>
-          <button id="nextFrameButton" type="button" disabled title="次へ">▶</button>
-          <button id="lastFrameButton" type="button" disabled title="最後">▶|</button>
+          <button id="nextButton" type="button" disabled>▶</button>
+          <button id="lastButton" type="button" disabled>▶|</button>
         </div>
 
         <div class="preview-options">
-          <label>
-            <span>背景</span>
-            <select id="backgroundSelect" disabled>
-              <option value="checker">透明市松</option>
-              <option value="white">白</option>
-              <option value="black">黒</option>
-              <option value="gray">グレー</option>
-            </select>
-          </label>
-          <label>
-            <span>1ループ</span>
-            <select id="durationSelect" disabled>
-              <option value="1000">1秒</option>
-              <option value="2000">2秒</option>
-              <option value="3000">3秒</option>
-              <option value="4000">4秒</option>
-            </select>
-          </label>
-          <label>
-            <span>ループ回数</span>
-            <select id="loopSelect" disabled></select>
-          </label>
+          <label><span>背景</span><select id="backgroundSelect" disabled>
+            <option value="checker">透明市松</option><option value="white">白</option><option value="black">黒</option><option value="gray">グレー</option>
+          </select></label>
+          <label><span>1ループ</span><select id="durationSelect" disabled>
+            <option value="1000">1秒</option><option value="2000">2秒</option><option value="3000">3秒</option><option value="4000">4秒</option>
+          </select></label>
+          <label><span>ループ回数</span><select id="loopSelect" disabled></select></label>
         </div>
 
-        <div class="metric-grid">
-          <div><span>フレーム</span><strong id="metricFrames">0</strong></div>
-          <div><span>1ループ</span><strong id="metricDuration">0.0秒</strong></div>
-          <div><span>総再生</span><strong id="metricTotal">0.0秒</strong></div>
-          <div><span>出力サイズ</span><strong id="metricOutput">-</strong></div>
+        <div class="metrics">
+          <div><span>フレーム</span><strong>8</strong></div>
+          <div><span>出力</span><strong>320×270</strong></div>
+          <div><span>総再生</span><strong id="totalDuration">4.0秒</strong></div>
+          <div><span>容量</span><strong id="fileBytes">未生成</strong></div>
         </div>
       </section>
 
-      <aside class="panel settings-panel">
-        <div class="panel-heading">
-          <div>
-            <span class="step-label">STEP 3</span>
-            <h2>整形・出力</h2>
-          </div>
+      <aside class="panel control-panel">
+        <div class="panel-heading"><div><span>STEP 3</span><h2>動きを調整</h2></div></div>
+
+        <div class="control-group">
+          <label class="field"><span>動きテンプレート</span><select id="motionSelect" disabled>
+            <option value="bounce">ぴょこ</option>
+            <option value="sway">ゆらゆら</option>
+            <option value="shake">ぷるぷる</option>
+            <option value="bow">ぺこり</option>
+            <option value="pop">ぽよん</option>
+            <option value="float">ふわふわ</option>
+            <option value="spin">くるり</option>
+          </select></label>
+          <p id="motionDescription" class="hint">上下に軽く跳ねます。</p>
         </div>
 
-        <div class="setting-group">
-          <div class="setting-title">
-            <strong>トンボ除去</strong>
-            <span id="trimValue">6%</span>
-          </div>
-          <input id="trimRange" type="range" min="0" max="12" step="1" value="6" disabled>
-          <div class="range-labels"><span>0%</span><span>12%</span></div>
-          <p>各セルの外周を同じ割合で除去します。</p>
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-title">
-            <strong>選択フレーム位置</strong>
-            <span id="selectedFrameLabel">未選択</span>
-          </div>
-          <div class="nudge-grid">
-            <span></span><button id="moveUp" type="button" disabled>↑</button><span></span>
-            <button id="moveLeft" type="button" disabled>←</button>
-            <button id="moveReset" type="button" disabled>中央</button>
-            <button id="moveRight" type="button" disabled>→</button>
-            <span></span><button id="moveDown" type="button" disabled>↓</button><span></span>
-          </div>
-          <p id="offsetLabel">X 0px / Y 0px</p>
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-title">
-            <strong>並び替え</strong>
-          </div>
-          <div class="button-row two">
-            <button id="reverseButton" type="button" disabled>逆順</button>
-            <button id="pingPongButton" type="button" disabled>往復</button>
-          </div>
-          <button id="restoreFramesButton" class="full-button" type="button" disabled>元の8コマへ戻す</button>
+        <div class="control-group sliders">
+          <label><span>動きの強さ <b id="strengthValue">55</b></span><input id="strengthRange" type="range" min="0" max="100" value="55" disabled></label>
+          <label><span>画像サイズ <b id="scaleValue">88%</b></span><input id="scaleRange" type="range" min="35" max="120" value="88" disabled></label>
+          <label><span>横位置 <b id="xValue">0</b></span><input id="xRange" type="range" min="-80" max="80" value="0" disabled></label>
+          <label><span>縦位置 <b id="yValue">0</b></span><input id="yRange" type="range" min="-70" max="70" value="0" disabled></label>
         </div>
 
         <div class="validation-card">
-          <div class="validation-heading">
-            <strong>LINE仕様チェック</strong>
-            <span id="validationBadge" class="validation-badge idle">待機</span>
-          </div>
+          <div class="validation-title"><strong>LINE仕様チェック</strong><span id="validationBadge" class="badge idle">待機</span></div>
           <ul id="validationList">
-            <li data-rule="frames">フレーム数 5〜20</li>
+            <li data-rule="loaded">PNG読込</li>
+            <li data-rule="frames">8フレーム</li>
             <li data-rule="duration">1ループ 1〜4秒</li>
             <li data-rule="total">総再生時間 4秒以内</li>
-            <li data-rule="size">最大 320×270px</li>
-            <li data-rule="alpha">透過PNG</li>
+            <li data-rule="size">320×270以内</li>
+            <li data-rule="alpha">透明領域あり</li>
             <li data-rule="bytes">1MB以下</li>
           </ul>
         </div>
 
         <button id="exportButton" class="primary-button" type="button" disabled>APNGを書き出す</button>
-        <button id="exportFramesButton" class="secondary-button" type="button" disabled>選択フレームPNGを保存</button>
-        <p id="exportMessage" class="export-message" aria-live="polite"></p>
+        <button id="saveFrameButton" class="secondary-button" type="button" disabled>現在フレームをPNG保存</button>
+        <p id="message" class="message" aria-live="polite"></p>
       </aside>
     </section>
 
-    <section class="timeline-panel panel">
-      <div class="panel-heading timeline-heading">
-        <div>
-          <span class="step-label">TIMELINE</span>
-          <h2>フレーム順</h2>
-        </div>
-        <p>クリックして位置調整するフレームを選択</p>
-      </div>
-      <div id="timeline" class="timeline">
-        <div class="timeline-empty">画像を読み込むと8フレームが並びます</div>
-      </div>
-    </section>
-
-    <section class="notes-panel">
-      <strong>現在のWeb MVP</strong>
-      <span>ブラウザだけで主要フローを試せます。作画崩れの修復や背景除去は行いません。</span>
+    <section class="panel timeline-panel">
+      <div class="panel-heading timeline-heading"><div><span>GENERATED FRAMES</span><h2>自動生成された8フレーム</h2></div><p>クリックで確認</p></div>
+      <div id="timeline" class="timeline"><p class="timeline-empty">画像を読み込むと8フレームを生成します</p></div>
     </section>
   </main>
 
-  <noscript>このアプリを使用するにはJavaScriptを有効にしてください。</noscript>
-  <script src="app.js?v=20260802-2"></script>
-  <script src="upng-loader.js?v=20260802-2" async></script>
+  <noscript>このアプリにはJavaScriptが必要です。</noscript>
+  <script src="app.js?v=20260802-3"></script>
 </body>
 </html>
