@@ -30,6 +30,7 @@ jobs:
           node --check docs/app.js
           node --check docs/motion-presets.js
           node --check docs/rig-editor.js
+          node --check docs/part-editor.js
           test -f docs/index.html
           test -f docs/styles.css
           grep -q 'id="previewCanvas"' docs/index.html
@@ -37,6 +38,7 @@ jobs:
           grep -q 'src="app.js?v=' docs/index.html
           grep -q 'src="motion-presets.js?v=' docs/index.html
           grep -q 'src="rig-editor.js?v=' docs/index.html
+          grep -q 'src="part-editor.js?v=' docs/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
