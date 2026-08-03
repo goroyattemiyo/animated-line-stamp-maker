@@ -2,45 +2,46 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="1枚の透過PNGを手動でパーツ分けし、ボーンと動作プリセットでLINEアニメーションスタンプ用APNGを作るWebアプリ">
-  <meta name="theme-color" content="#08101d">
-  <title>Animated LINE Stamp Maker</title>
-  <link rel="stylesheet" href="styles.css?v=20260803-7">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="1枚のPNGを手動で素材分けし、Live2D Cubism Editor向けPSDを書き出すWebアプリ">
+  <meta name="theme-color" content="#0b1018">
+  <title>Cubism Parts Separator</title>
+  <link rel="stylesheet" href="styles.css?v=20260803-8">
 </head>
 <body>
-  <header class="topbar"><div class="brand"><span class="brand-mark">8</span><div><strong>Animated LINE Stamp Maker</strong><span>パーツ分けしてキャラを動かす</span></div></div><div class="top-actions"><span id="appStatus" class="status-pill">起動中…</span><button id="resetButton" class="ghost-button" type="button" disabled>リセット</button><a class="ghost-button" href="https://github.com/goroyattemiyo/animated-line-stamp-maker" target="_blank" rel="noreferrer">GitHub</a></div></header>
-  <main class="app-shell">
-    <section class="hero-strip"><div><p class="eyebrow">PARTS & RIG ANIMATION MAKER</p><h1>パーツを分けて、<br>1枚の絵を動かす。</h1><p>画像を手動で囲って独立パーツにし、回転軸・親子関係・ボーン割当と動作プリセットを8フレームへ反映します。</p></div><div class="goal-chip">手動パーツ分け＋リグ</div></section>
-    <section class="workspace">
-      <aside class="panel input-panel"><div class="panel-heading"><div><span class="step-label">STEP 1</span><h2>画像・パーツ・リグ</h2></div></div>
-        <label id="dropZone" class="drop-zone" for="fileInput"><input id="fileInput" type="file" accept="image/png"><span class="drop-icon">＋</span><strong>透過PNGを選択</strong><small>画像は外部へ送信されません</small></label>
-        <div id="sourceMeta" class="source-meta hidden"><div><span>ファイル</span><strong id="fileName">-</strong></div><div><span>元サイズ</span><strong id="sourceSize">-</strong></div><div><span>透過</span><strong id="alphaState">-</strong></div></div>
-        <div class="source-preview checker"><canvas id="sourceCanvas" width="320" height="270" aria-label="読み込んだ元画像"></canvas><div id="emptySource" class="empty-overlay">PNGを読み込み、パーツを囲ってください</div></div>
-        <div class="control-card compact-controls"><label><span>画像サイズ <b id="scaleValue">100%</b></span><input id="scaleRange" type="range" min="55" max="140" value="100" disabled></label><div class="split-controls"><label><span>左右 <b id="positionXValue">0</b></span><input id="positionXRange" type="range" min="-90" max="90" value="0" disabled></label><label><span>上下 <b id="positionYValue">0</b></span><input id="positionYRange" type="range" min="-80" max="80" value="0" disabled></label></div></div>
-      </aside>
-      <section class="panel preview-panel"><div class="panel-heading"><div><span class="step-label">STEP 2</span><h2>動きを確認する</h2></div><span id="previewFrameLabel" class="frame-counter">- / 8</span></div>
-        <div id="previewStage" class="preview-stage checker"><canvas id="previewCanvas" width="320" height="270" aria-label="パーツアニメーションプレビュー"></canvas><div id="emptyPreview" class="empty-overlay">パーツアニメーションをここで再生します</div></div>
-        <div class="transport"><button id="firstFrameButton" type="button" disabled>|◀</button><button id="previousFrameButton" type="button" disabled>◀</button><button id="playButton" class="play-button" type="button" disabled>▶ 再生</button><button id="nextFrameButton" type="button" disabled>▶</button><button id="lastFrameButton" type="button" disabled>▶|</button></div>
-        <div class="preview-options"><label><span>背景</span><select id="backgroundSelect" disabled><option value="checker">透明市松</option><option value="white">白</option><option value="black">黒</option><option value="gray">グレー</option></select></label><label><span>1ループ</span><select id="durationSelect" disabled><option value="1000">1秒</option><option value="2000">2秒</option><option value="3000">3秒</option><option value="4000">4秒</option></select></label><label><span>ループ</span><select id="loopSelect" disabled><option value="1">1回</option><option value="2">2回</option><option value="3">3回</option><option value="4" selected>4回</option></select></label></div>
-        <div class="metrics"><div><span>感情・動作</span><strong id="metricEmotion">-</strong></div><div><span>フレーム</span><strong>8</strong></div><div><span>総再生</span><strong id="metricTotal">4.0秒</strong></div><div><span>出力</span><strong id="metricOutput">320×270</strong></div></div>
-      </section>
-      <aside class="panel editor-panel"><div class="panel-heading"><div><span class="step-label">STEP 3</span><h2>感情と動作を作る</h2></div></div>
-        <div id="emotionGrid" class="emotion-grid"><button type="button" data-emotion="laugh" disabled><span>😆</span><strong>笑う</strong><small>ジャンプ推奨</small></button><button type="button" data-emotion="angry" disabled><span>💢</span><strong>怒る</strong><small>ぷるぷる推奨</small></button><button type="button" data-emotion="cry" disabled><span>😭</span><strong>泣く</strong><small>しょんぼり推奨</small></button><button type="button" data-emotion="surprise" disabled><span>😲</span><strong>驚く</strong><small>ジャンプ推奨</small></button><button type="button" data-emotion="shy" disabled><span>🥰</span><strong>照れる</strong><small>ゆらゆら推奨</small></button><button type="button" data-emotion="bow" disabled><span>🙇</span><strong>お辞儀</strong><small>お辞儀推奨</small></button></div>
-        <div class="control-card"><div class="control-title"><strong>旧動き強度</strong><span id="intensityValue">70%</span></div><input id="intensityRange" type="range" min="10" max="100" value="70" disabled></div>
-        <div class="control-card"><div class="toggle-row"><label><input id="expressionToggle" type="checkbox" disabled><span>簡易表情を重ねる</span></label><label><input id="effectToggle" type="checkbox" checked disabled><span>感情エフェクト</span></label></div><div class="split-controls face-controls"><label><span>表情 左右 <b id="faceXValue">0</b></span><input id="faceXRange" type="range" min="-40" max="40" value="0" disabled></label><label><span>表情 上下 <b id="faceYValue">-12</b></span><input id="faceYRange" type="range" min="-55" max="35" value="-12" disabled></label></div><label class="full-control"><span>表情サイズ <b id="faceSizeValue">100%</b></span><input id="faceSizeRange" type="range" min="55" max="155" value="100" disabled></label></div>
-        <div class="control-card text-card"><div class="toggle-row single"><label><input id="textToggle" type="checkbox" checked disabled><span>文字を入れる</span></label></div><input id="textInput" type="text" maxlength="18" value="わーい！" disabled><div class="split-controls"><label><span>位置</span><select id="textPositionSelect" disabled><option value="top">上</option><option value="bottom" selected>下</option></select></label><label><span>文字サイズ</span><select id="textSizeSelect" disabled><option value="34">小</option><option value="42" selected>中</option><option value="50">大</option></select></label></div></div>
-        <div class="validation-card"><div class="validation-heading"><strong>出力チェック</strong><span id="validationBadge" class="validation-badge idle">待機</span></div><ul id="validationList"><li data-rule="image">PNG画像を読込済み</li><li data-rule="frames">8フレーム</li><li data-rule="duration">総再生時間4秒以内</li><li data-rule="size">320×270px以内</li><li data-rule="alpha">透明背景を保持</li><li data-rule="bytes">APNG 1MB以下</li></ul></div>
-        <button id="exportButton" class="primary-button" type="button" disabled>APNGを書き出す</button><button id="exportFrameButton" class="secondary-button" type="button" disabled>現在フレームPNGを保存</button><p id="exportMessage" class="export-message" aria-live="polite"></p>
-      </aside>
+<header class="topbar">
+  <div class="brand"><span class="mark">C</span><div><strong>Cubism Parts Separator</strong><span>Live2D用 手動素材分け</span></div></div>
+  <div class="top-actions"><span id="status" class="status">画像未読込</span><button id="resetBtn" class="ghost" disabled>リセット</button><a class="ghost" href="https://github.com/goroyattemiyo/animated-line-stamp-maker" target="_blank" rel="noreferrer">GitHub</a></div>
+</header>
+<main class="shell">
+  <section class="intro">
+    <div><p class="eyebrow">LIVE2D CUBISM MATERIAL SEPARATION</p><h1>動かさない。<br>まず、きれいに分ける。</h1><p>原画を多角形とブラシでパーツ化し、レイヤー順と名前を整えてCubism Editor向けPSDへ書き出します。</p></div>
+    <div class="spec"><b>出力</b><span>RGB / 8bit PSD</span><span>全パーツ同一キャンバス</span><span>重複名チェック</span></div>
+  </section>
+  <section class="workspace">
+    <aside class="panel left-panel">
+      <div class="panel-head"><div><span>01</span><h2>原画</h2></div></div>
+      <label id="dropZone" class="drop-zone" for="fileInput"><input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp"><b>画像を選択</b><small>PNG / JPEG / WebP・外部送信なし</small></label>
+      <div id="fileMeta" class="meta hidden"><div><span>ファイル</span><b id="fileName">-</b></div><div><span>サイズ</span><b id="imageSize">-</b></div><div><span>パーツ</span><b id="partCount">0</b></div></div>
+      <div class="control-block"><label><span>原画表示 <b id="sourceOpacityValue">55%</b></span><input id="sourceOpacity" type="range" min="0" max="100" value="55" disabled></label><label class="check"><input id="showSource" type="checkbox" checked disabled><span>原画を表示</span></label></div>
+      <div class="notice"><b>Cubism向け</b><p>各パーツは元画像と同じキャンバス寸法で保存します。Cubismへ読み込んだときの位置合わせが崩れません。</p></div>
+    </aside>
+    <section class="panel canvas-panel">
+      <div class="panel-head"><div><span>02</span><h2>パーツを囲う・塗る</h2></div><div class="zoom"><button id="zoomOut" disabled>−</button><b id="zoomLabel">100%</b><button id="zoomIn" disabled>＋</button><button id="fitBtn" disabled>全体</button></div></div>
+      <div id="stage" class="stage checker"><div id="canvasWrap" class="canvas-wrap"><canvas id="viewCanvas"></canvas><canvas id="overlayCanvas"></canvas></div><div id="emptyStage" class="empty">画像を読み込んでください</div></div>
+      <div class="toolbar"><button id="polygonBtn" class="tool active" disabled>多角形</button><button id="brushAddBtn" class="tool" disabled>ブラシ追加</button><button id="brushEraseBtn" class="tool" disabled>ブラシ削除</button><button id="movePointBtn" class="tool" disabled>頂点調整</button><button id="undoBtn" disabled>元に戻す</button><button id="clearMaskBtn" disabled>選択解除</button></div>
+      <div class="tool-options"><label>ブラシ <input id="brushSize" type="range" min="4" max="120" value="28" disabled><b id="brushSizeValue">28px</b></label><span id="toolHelp">クリックで頂点追加。最初の点を再クリック、または「パーツ作成」で閉じます。</span></div>
     </section>
-    <section class="panel timeline-panel"><div class="panel-heading timeline-heading"><div><span class="step-label">8 FRAMES</span><h2>生成フレーム</h2></div><p>クリックして静止確認</p></div><div id="timeline" class="timeline"><div class="timeline-empty">画像を読み込むと8フレームを自動生成します</div></div></section>
-    <section class="notes-panel"><strong>手動パーツ分け</strong><span>頭・胴体・腕・脚・髪・目・口を多角形で囲み、表示順、回転軸、親子関係、接続ボーンを設定できます。プロジェクトJSONとして保存・再読込できます。</span></section>
-  </main>
-  <noscript>このアプリを使用するにはJavaScriptを有効にしてください。</noscript>
-  <script src="app.js?v=20260803-7"></script>
-  <script src="motion-presets.js?v=20260803-7"></script>
-  <script src="rig-editor.js?v=20260803-7"></script>
-  <script src="part-editor.js?v=20260803-7"></script>
+    <aside class="panel right-panel">
+      <div class="panel-head"><div><span>03</span><h2>レイヤー</h2></div></div>
+      <div class="new-part"><label><span>レイヤー名</span><input id="partName" type="text" value="顔" maxlength="80" disabled></label><div class="two"><label><span>分類</span><select id="partCategory" disabled><option>顔</option><option>髪</option><option>目</option><option>眉</option><option>口</option><option>耳</option><option>首</option><option>胴体</option><option>腕</option><option>手</option><option>脚</option><option>衣装</option><option>装飾</option><option>原画</option><option>その他</option></select></label><label><span>境界ぼかし</span><select id="feather" disabled><option value="0">なし</option><option value="1" selected>1px</option><option value="2">2px</option><option value="3">3px</option></select></label></div><button id="createPartBtn" class="primary" disabled>選択範囲からパーツ作成</button></div>
+      <div class="layer-actions"><button id="upBtn" disabled>前へ</button><button id="downBtn" disabled>後ろへ</button><button id="duplicateBtn" disabled>複製</button><button id="deleteBtn" disabled>削除</button></div>
+      <div id="layerList" class="layer-list"><div class="empty-list">パーツはまだありません</div></div>
+      <div class="export-card"><div class="checklist"><div><span>重複レイヤー名</span><b id="nameCheck">-</b></div><div><span>空レイヤー</span><b id="emptyCheck">-</b></div><div><span>原画レイヤー</span><b id="guideCheck">任意</b></div></div><label class="check"><input id="includeGuide" type="checkbox" checked disabled><span>原画を「_guide_original」として含める</span></label><button id="exportPsdBtn" class="primary" disabled>Cubism用PSDを書き出す</button><button id="saveProjectBtn" class="secondary" disabled>作業データJSONを保存</button><label class="secondary file-button">作業データJSONを読込<input id="loadProjectInput" type="file" accept="application/json,.json" disabled></label><p id="message" aria-live="polite"></p></div>
+    </aside>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/ag-psd@31.0.2/dist/bundle.js"></script>
+<script src="app.js?v=20260803-8"></script>
 </body>
 </html>
